@@ -24,7 +24,7 @@
 1.  **Клонируйте репозиторий**
 
     ```bash
-    git clone <URL репозитория>
+    git clone https://github.com/chypac/test_task.git
     cd my-app
     ```
 
