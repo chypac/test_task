@@ -14,16 +14,13 @@ const usePosts = (searchQuery: string) => {
   const [loading, setLoading] = useState(true); // Статус первоначальной загрузки.
   const [error, setError] = useState<string | null>(null); // Сообщение об ошибке.
 
-  // useEffect для первоначальной загрузки всех постов с API.
-  // Запускается только один раз при монтировании компонента, т.к. массив зависимостей пуст.
+  // Загружаем все посты один раз при монтировании
   useEffect(() => {
     const fetchAllPosts = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Загружаем все 100 постов с сервера.
         const response = await axios.get<Post[]>('https://jsonplaceholder.typicode.com/posts');
-        // Сохраняем посты в их оригинальном виде.
         setAllPosts(response.data);
       } catch (e) {
         setError('Не удалось загрузить посты.');
@@ -32,16 +29,13 @@ const usePosts = (searchQuery: string) => {
         setLoading(false);
       }
     };
-
     fetchAllPosts();
   }, []);
 
-  // useMemo для мемоизации отфильтрованного списка постов.
-  // Фильтрация происходит на клиенте по заголовку и телу поста.
-  // Пересчитывается только при изменении `allPosts` или `searchQuery`.
+  // Фильтруем посты на клиенте, когда меняется поисковый запрос или основной список постов
   const filteredPosts = useMemo(() => {
     if (!searchQuery) {
-      return allPosts; // Если поиск пуст, возвращаем все посты.
+      return allPosts;
     }
     return allPosts.filter(post =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,15 +43,11 @@ const usePosts = (searchQuery: string) => {
     );
   }, [allPosts, searchQuery]);
 
-    // Эффект для инициализации и сброса пагинации при изменении отфильтрованных постов.
-  // Запускается, когда пользователь вводит новый поисковый запрос.
+  // Инициализируем и сбрасываем пагинацию при изменении отфильтрованного списка
   useEffect(() => {
-    setPage(1); // Сбрасываем на первую страницу.
-    setPosts([]); // Очищаем текущий список постов.
-    // Загружаем первую порцию отфильтрованных постов.
+    setPage(1);
     const newPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
     setPosts(newPosts);
-    // Проверяем, есть ли еще посты для загрузки.
     setHasMore(filteredPosts.length > POSTS_PER_PAGE);
   }, [filteredPosts]);
 

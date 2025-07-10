@@ -19,24 +19,22 @@ const HomePage = () => {
 
   // useCallback для мемоизации функции, которая будет передана в ref последнего элемента.
   // Это предотвращает пересоздание IntersectionObserver при каждом рендере.
-  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
-    // Если идет загрузка, ничего не делаем.
+  const lastPostElementRef = useCallback((node: HTMLDivElement | null) => {
     if (loading) return;
-    // Отключаем предыдущий observer, чтобы избежать утечек памяти.
     if (observer.current) observer.current.disconnect();
 
-    // Создаем новый IntersectionObserver.
     observer.current = new IntersectionObserver(entries => {
-      // Если последний элемент в зоне видимости и есть еще посты для загрузки,
-      // вызываем функцию loadMore.
       if (entries[0].isIntersecting && hasMore) {
-        loadMore();
+        // Небольшая задержка, чтобы предотвратить многократный вызов в StrictMode.
+        // Это решает проблему мгновенной загрузки всех постов.
+        setTimeout(() => {
+            loadMore();
+        }, 100);
       }
     });
 
-    // Начинаем наблюдение за новым последним элементом.
     if (node) observer.current.observe(node);
-  }, [loading, hasMore, loadMore]);  // Зависимости для useCallback
+  }, [loading, hasMore, loadMore]);
 
   // Флаг, который определяет, нужно ли отображать скелетоны.
   // Скелетоны показываются только при первоначальной загрузке, когда постов еще нет.
