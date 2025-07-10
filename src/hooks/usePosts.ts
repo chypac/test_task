@@ -87,3 +87,5 @@ const usePosts = (searchQuery: string) => {
 };
 
 export default usePosts;
+
+// A trivial comment to force Git to recognize changes.
