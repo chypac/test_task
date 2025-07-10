@@ -49,33 +49,38 @@ const usePosts = (searchQuery: string) => {
     );
   }, [allPosts, searchQuery]);
 
-  // useEffect для сброса и загрузки постов при изменении поискового запроса
+    // Эффект для инициализации и сброса пагинации при изменении отфильтрованных постов.
+  // Запускается, когда пользователь вводит новый поисковый запрос.
   useEffect(() => {
-    setPosts([]); // Сбрасываем посты при изменении поиска.
-    setPage(1); // Возвращаемся на первую страницу.
-    setHasMore(true); // Говорим, что есть еще посты для загрузки.
-    if (filteredPosts.length > 0) {
-      setPosts(filteredPosts.slice(0, POSTS_PER_PAGE)); // Загружаем первые посты.
-      setHasMore(filteredPosts.length > POSTS_PER_PAGE); // Проверяем, есть ли еще посты.
-    }
-  }, [searchQuery, filteredPosts]);
-
-  // useEffect для загрузки следующей страницы
-  useEffect(() => {
-    // Не загружаем первую страницу дважды
-    if (page > 1) {
-      const start = (page - 1) * POSTS_PER_PAGE;
-      const end = start + POSTS_PER_PAGE;
-      setPosts(prevPosts => [...prevPosts, ...filteredPosts.slice(start, end)]);
-      setHasMore(filteredPosts.length > end);
-    }
-  }, [page, filteredPosts]);
+    setPage(1); // Сбрасываем на первую страницу.
+    setPosts([]); // Очищаем текущий список постов.
+    // Загружаем первую порцию отфильтрованных постов.
+    const newPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
+    setPosts(newPosts);
+    // Проверяем, есть ли еще посты для загрузки.
+    setHasMore(filteredPosts.length > POSTS_PER_PAGE);
+  }, [filteredPosts]);
 
   // Функция для загрузки следующей "страницы" постов.
+  // Вызывается Intersection Observer'ом при прокрутке.
   const loadMore = () => {
-    if (hasMore) {
-      setPage(prevPage => prevPage + 1);
-    }
+    // Проверяем, есть ли еще что загружать и не идет ли уже загрузка.
+    if (!hasMore || loading) return;
+
+    // Вычисляем следующую страницу.
+    const nextPage = page + 1;
+    const start = page * POSTS_PER_PAGE;
+    const end = start + POSTS_PER_PAGE;
+
+    // Получаем следующую порцию постов из отфильтрованного списка.
+    const newPosts = filteredPosts.slice(start, end);
+
+    // Добавляем новые посты к существующим.
+    setPosts(prevPosts => [...prevPosts, ...newPosts]);
+    // Обновляем страницу.
+    setPage(nextPage);
+    // Проверяем, остались ли еще посты после текущей загрузки.
+    setHasMore(filteredPosts.length > end);
   };
 
   return { loading, error, posts, hasMore, loadMore };
