@@ -25,7 +25,7 @@
 
     ```bash
     git clone https://github.com/chypac/test_task.git
-    cd my-app
+    cd test_task
     ```
 
 2.  **Установите зависимости**
